@@ -1,6 +1,15 @@
 function love.load()
     anim8 = require "libraries/anim8/anim8"
 
+    sprites = {}
+    sprites.playerSheet = love.graphics.newImage('sprites/playerSheet.png')
+
+    local grid = anim8.newGrid(614,564, sprites.playerSheet:getWidth(),
+        sprites.playerSheet:getHeight())
+
+    animations = {}
+    animations.
+
     wf = require 'libraries/windfield/windfield'
     world = wf.newWorld(0,1000,false)
     world:setQueryDebugDrawing(true)
