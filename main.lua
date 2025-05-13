@@ -35,6 +35,9 @@ function love.load()
 
     dangerZone = world:newRectangleCollider(0,550,800,50,{collision_class = "Danger"})
     dangerZone:setType('static')
+
+    --TODO
+    -- flip animation
 end
 
 function love.update(dt)
