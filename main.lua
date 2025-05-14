@@ -24,10 +24,11 @@ function love.load()
     player = world:newRectangleCollider(360,100,40,100, {collision_class = "Player"})
     player:setFixedRotation(true)
     player.speed = 240
+    player.direction = 1 
 
     player.animation = animations.idle
     player.isMoving = false
-    player.isJumping = false
+    player.isGrounded = true
 
     -- platforms --
     platforms = world:newRectangleCollider(250,400,300,100, {collision_class = "Platform"})
@@ -37,21 +38,32 @@ function love.load()
     dangerZone:setType('static')
 
     --TODO
-    -- flip animation
+    -- optimize file 
 end
 
 function love.update(dt)
     world:update(dt)
     if player.body then
+        local colliders = world:queryRectangleArea(player:getX() - 20,
+            player:getY() + 50,40,2, {'Platform'})
+        -- number of collider is greater than 0 then player is grounded 
+        if #colliders > 0 then
+            player.isGrounded = true
+        else
+            player.isGrounded = false
+        end
+
         player.isMoving = false
-        --player.isJumping = false
+
         local px , py = player:getPosition()
         if love.keyboard.isDown('d') then
             player.isMoving = true
+            player.direction = 1 
             player:setX(px + player.speed*dt)
         end
         if love.keyboard.isDown('a') then
             player.isMoving = true
+            player.direction = -1
             player:setX(px - player.speed*dt)
         end
 
@@ -59,12 +71,15 @@ function love.update(dt)
             player:destroy()
         end
     end
-    if player.isMoving == true then
-        player.animation = animations.run
-    elseif player.isJumping then
-        player.animation = animations.jump
+
+    if player.isGrounded then
+        if player.isMoving == true then
+            player.animation = animations.run
+        else
+            player.animation = animations.idle
+        end
     else
-        player.animation = animations.idle
+        player.animation = animations.jump
     end
     player.animation:update(dt)
 end
@@ -72,18 +87,12 @@ end
 function love.draw()
     world:draw()
     local px, py = player:getPosition()
-    player.animation:draw(sprites.playerSheet,px,py,nil,0.25,nil,130,300)
+    player.animation:draw(sprites.playerSheet,px,py,nil,0.25 * player.direction, 0.25,130,300)
 end
 
 function love.keypressed(key)
-    if key == 'w' then
-        local colliders = world:queryRectangleArea(player:getX() - 20,
-            player:getY() + 50,40,2, {'Platform'})
-        -- number of collider is greater than 0 then jump 
-        if #colliders > 0 then      
-            player.isJumping = true   
+    if key == 'w' and player.isGrounded then
             player:applyLinearImpulse(0, -4000)
-        end
     end
 end
 
