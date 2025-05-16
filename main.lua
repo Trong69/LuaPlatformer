@@ -1,3 +1,7 @@
+--link to repo
+-- https://github.com/vrld/hump
+-- https://github.com/karai17/Simple-Tiled-Implementation
+
 function love.load()
     love.window.setMode(1000, 768)
 
