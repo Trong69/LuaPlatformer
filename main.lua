@@ -14,6 +14,7 @@ function love.load()
 
     sprites = {}
     sprites.playerSheet = love.graphics.newImage('sprites/playerSheet.png')
+    sprites.enemySheet = love.graphics.newImage('sprites/enemySheet.png')
 
     local grid = anim8.newGrid(614,564, sprites.playerSheet:getWidth(),
         sprites.playerSheet:getHeight())
