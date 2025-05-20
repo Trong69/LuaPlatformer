@@ -33,6 +33,7 @@ function love.load()
 
     --Player--
     require('player')
+    require('enemy')
     
     -- platforms --
     
@@ -41,6 +42,7 @@ function love.load()
     platforms = {}
 
     loadMap()
+    spawnEnemy(1260,320)
 
     
 
@@ -52,6 +54,7 @@ function love.update(dt)
     world:update(dt)
     gameMap:update(dt)
     playerUpdate(dt)
+    updateEnemy(dt)
 
     local px, py = player:getPosition()
     cam:lookAt(px, love.graphics.getHeight()/2)
@@ -61,7 +64,7 @@ end
 function love.draw()
     cam:attach()
         gameMap:drawLayer(gameMap.layers['Tile Layer 1'])
-        --world:draw()
+        world:draw()
         drawPlayer()
     cam:detach()
     
