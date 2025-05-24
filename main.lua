@@ -8,8 +8,19 @@ function love.load()
     anim8 = require "libraries/anim8/anim8"
     sti = require 'libraries/Simple-Tiled-Implementation/sti'
     cameraFile = require 'libraries/hump/camera'
+    require('libraries/show')
+    
 
     cam = cameraFile()
+
+    --Sound
+    sounds ={}
+    sounds.music = love.audio.newSource('audio/music.mp3','stream')
+    sounds.jump = love.audio.newSource('audio/jump.wav','static')
+
+    sounds.music:setLooping(true)
+    sounds.music:setVolume(0.2)
+    sounds.music:play()
 
 
     sprites = {}
@@ -40,16 +51,25 @@ function love.load()
     require('player')
     require('enemy')
     
+    
     -- platforms --
     
     --dangerZone = world:newRectangleCollider(0,550,800,50,{collision_class = "Danger"})
     --dangerZone:setType('static')
     platforms = {}
 
-    loadMap()
-    spawnEnemy(1260,320)
+    flagX = 0
+    flagY = 0
 
-    
+    saveData ={}
+    saveData.currentLevel = 'level1'
+
+    if love.filesystem.getInfo("data.lua") then
+        local data = love.filesystem.load("data.lua")
+        data()
+    end
+
+    loadMap(saveData.currentLevel)
 
     --TODO
     -- make game map, add map
@@ -63,6 +83,15 @@ function love.update(dt)
 
     local px, py = player:getPosition()
     cam:lookAt(px, love.graphics.getHeight()/2)
+
+    local collider = world:queryRectangleArea(flagX,flagY,64,64,{'Player'})
+    if #collider > 0 then
+        if saveData.currentLevel == 'level1' then
+            loadMap('level2')
+        elseif saveData.currentLevel == 'level2' then
+        loadMap('level1')
+        end
+    end
     
 end
 
@@ -73,12 +102,16 @@ function love.draw()
         drawPlayer()
         drawEnemy()
     cam:detach()
+    love.graphics.setFont(love.graphics.newFont(50))
+    love.graphics.print(saveData.currentLevel, 0,0)
     
 end
 
 function love.keypressed(key)
     if key == 'w' and player.isGrounded then
-            player:applyLinearImpulse(0, -4000)
+            player:applyLinearImpulse(0, -5000)
+            sounds.jump:setVolume(0.3)
+            sounds.jump:play()
     end
 end
 
@@ -97,9 +130,43 @@ function spawnPlatform (x,y,width, height)
     end
 end
 
-function loadMap()
-    gameMap = sti('maps/level1.lua')
+function destroyAll()
+    local i = #platforms
+    while i > -1 do
+        if platforms[i] ~= nil then    
+        platforms[i]:destroy()
+        end
+        table.remove(platforms,i)
+        i = i - 1
+    end
+
+    local i = #enemies
+    while i > -1 do
+        if enemies[i] ~= nil then    
+            enemies[i]:destroy()
+        end
+        table.remove(enemies,i)
+        i = i - 1
+    end
+    
+end
+
+function loadMap(mapName)
+    saveData.currentLevel = mapName
+    love.filesystem.write('data.lua',table.show(saveData,'saveData'))
+    destroyAll()
+    player:setPosition(300, 100)
+    gameMap = sti('maps/' .. mapName .. '.lua')
     for i, obj in pairs(gameMap.layers['Platforms'].objects) do
         spawnPlatform(obj.x, obj.y, obj.width, obj.height)
+    end
+
+    for i, obj in pairs(gameMap.layers['Enemies'].objects) do
+        spawnEnemy(obj.x, obj.y)
+    end
+
+    for i, obj in pairs(gameMap.layers['Flag'].objects) do
+        flagX = obj.x 
+        flagY = obj.y 
     end
 end
