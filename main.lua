@@ -11,6 +11,10 @@ function love.load()
     require('libraries/show')
     
 
+    --TODO 
+    --Đi lại, idle, nhảy, đánh, chết. Đánh rung,
+    --bị đẩy lùi, có vfx đằng sau. Parallax effect
+
     cam = cameraFile()
 
     --Sound
