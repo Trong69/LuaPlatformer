@@ -17,6 +17,10 @@ function love.load()
 
     cam = cameraFile()
 
+    --Tile and map
+    mapWidth = 40
+    tileSize = 64
+
     --Sound
     sounds ={}
     sounds.music = love.audio.newSource('audio/music.mp3','stream')
@@ -30,6 +34,7 @@ function love.load()
     sprites = {}
     sprites.playerSheet = love.graphics.newImage('sprites/playerSheet.png')
     sprites.enemySheet = love.graphics.newImage('sprites/enemySheet.png')
+    sprites.background = love.graphics.newImage('sprites/background.png')
 
     local playerGrid = anim8.newGrid(614,564, sprites.playerSheet:getWidth(),
         sprites.playerSheet:getHeight())
@@ -58,8 +63,9 @@ function love.load()
     
     -- platforms --
     
-    --dangerZone = world:newRectangleCollider(0,550,800,50,{collision_class = "Danger"})
-    --dangerZone:setType('static')
+    dangerZone = world:newRectangleCollider(-500,800,5000,50,{collision_class = "Danger"})
+    dangerZone:setType('static')
+
     platforms = {}
 
     flagX = 0
@@ -86,7 +92,11 @@ function love.update(dt)
     updateEnemy(dt)
 
     local px, py = player:getPosition()
-    cam:lookAt(px, love.graphics.getHeight()/2)
+    local mapPixelWidth = mapWidth * tileSize 
+    local halfScreenWidth = love.graphics.getWidth()/2
+    local camX = math.max(halfScreenWidth, math.min(px,mapPixelWidth - halfScreenWidth))
+
+    cam:lookAt(camX, love.graphics.getHeight()/2)
 
     local collider = world:queryRectangleArea(flagX,flagY,64,64,{'Player'})
     if #collider > 0 then
@@ -100,6 +110,7 @@ function love.update(dt)
 end
 
 function love.draw()
+    love.graphics.draw(sprites.background,0,0)
     cam:attach()
         gameMap:drawLayer(gameMap.layers['Tile Layer 1'])
         world:draw()

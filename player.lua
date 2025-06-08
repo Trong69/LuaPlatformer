@@ -33,7 +33,7 @@ function playerUpdate(dt)
         end
 
         if player:enter('Danger') then
-            player:destroy()
+            player:setPosition(300, 100)
         end
     end
 
